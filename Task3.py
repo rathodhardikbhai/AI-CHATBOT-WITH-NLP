@@ -15,14 +15,10 @@ import string
 
 from dotenv import load_dotenv
 import os
-
-# Load spaCy's English language model
 nlp = spacy.load("en_core_web_sm")
 
-# Initialize lemmatizer
 lemmatizer = WordNetLemmatizer()
 
-# Define patterns and responses
 pairs = [
     [
         r"hi|hello|hey|greetings",
@@ -76,10 +72,8 @@ class NLPChatBot:
         self.context = {}
         
     def preprocess_text(self, text):
-        # Tokenize and lemmatize
         tokens = word_tokenize(text.lower())
         tokens = [lemmatizer.lemmatize(token) for token in tokens]
-        # Remove punctuation
         tokens = [token for token in tokens if token not in string.punctuation]
         return ' '.join(tokens)
     
@@ -89,22 +83,15 @@ class NLPChatBot:
         return entities
     
     def respond(self, user_input):
-        # Preprocess the input
         processed_input = self.preprocess_text(user_input)
-        
-        # Extract named entities for potential context
         entities = self.extract_entities(user_input)
         if entities:
             self.context['entities'] = entities
-        
-        # Get response from the chatbot
         response = self.chatbot.respond(processed_input)
         
-        # If no matching pattern was found, use a fallback with NLP analysis
         if not response:
             doc = nlp(user_input)
             
-            # Check for question types
             if any(token.text.lower() in ['who', 'what', 'when', 'where', 'why', 'how'] for token in doc):
                 response = "That's an interesting question. I might not have the full answer, but I can try to help."
             elif any(token.dep_ == 'ROOT' and token.pos_ == 'VERB' for token in doc):
